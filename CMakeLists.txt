@@ -22,6 +22,7 @@ qt_add_executable(appCANHub
     src/canopen/pdoengine.cpp
     src/canopen/heartbeatmonitor.cpp
     src/canopen/nodemanager.cpp
+    src/ui/nodelistmodel.cpp
 )
 
 qt_add_qml_module(appCANHub
@@ -35,6 +36,7 @@ qt_add_qml_module(appCANHub
         SOURCES src/canopen/heartbeatmonitor.h src/canopen/heartbeatmonitor.cpp
         SOURCES src/canopen/NodeSession.h
         SOURCES src/canopen/nodemanager.h src/canopen/nodemanager.cpp
+        SOURCES src/ui/nodelistmodel.h src/ui/nodelistmodel.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

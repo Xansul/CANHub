@@ -1,27 +1,30 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QThread>
+#include <QQmlContext>
 #include "src/transport/busengine.h"
 #include "src/canopen/sdoclient.h"
 #include "src/canopen/nmtmaster.h"
 #include "src/canopen/pdoengine.h"
 #include "src/canopen/heartbeatmonitor.h"
 #include "src/canopen/nodemanager.h"
+#include "src/ui/nodelistmodel.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
     //create objects
-    auto *busThread = new QThread;
+    auto *busThread = new QThread(&app);
     //no parent - will be moved to thread
     auto *busEngine = new BusEngine;
     //stays on main thread
-    auto *sdoClient = new SDOClient;
-    auto *nmtMaster = new NMTMaster;
-    auto *pdoEngine = new PDOEngine;
-    auto *heartbeatMonitor = new HeartbeatMonitor;
-    auto *nodeManager = new NodeManager(nmtMaster, heartbeatMonitor, sdoClient, pdoEngine);
+    auto *sdoClient = new SDOClient(&app);
+    auto *nmtMaster = new NMTMaster(&app);
+    auto *pdoEngine = new PDOEngine(&app);
+    auto *heartbeatMonitor = new HeartbeatMonitor(&app);
+    auto *nodeManager = new NodeManager(nmtMaster, heartbeatMonitor, sdoClient, pdoEngine, &app);
+    auto *nodeListModel = new NodeListModel(nodeManager, &app);
 
     //move to thread - busEngine slots will now run on busThread
     busEngine->moveToThread(busThread);
@@ -54,6 +57,9 @@ int main(int argc, char *argv[])
     QMetaObject::invokeMethod(busEngine, "connectDevice", Qt::QueuedConnection);
 
     QQmlApplicationEngine engine;
+
+    //QML isn't creating instances - context property is appropriate here
+    engine.rootContext()->setContextProperty("nodeListModel", nodeListModel);
 
     engine.loadFromModule("CANHub", "Main");
 
