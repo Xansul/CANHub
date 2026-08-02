@@ -6,6 +6,7 @@
 #include "src/canopen/nmtmaster.h"
 #include "src/canopen/pdoengine.h"
 #include "src/canopen/heartbeatmonitor.h"
+#include "src/canopen/nodemanager.h"
 
 int main(int argc, char *argv[])
 {
@@ -20,6 +21,7 @@ int main(int argc, char *argv[])
     auto *nmtMaster = new NMTMaster;
     auto *pdoEngine = new PDOEngine;
     auto *heartbeatMonitor = new HeartbeatMonitor;
+    auto *nodeManager = new NodeManager(nmtMaster, heartbeatMonitor, sdoClient, pdoEngine);
 
     //move to thread - busEngine slots will now run on busThread
     busEngine->moveToThread(busThread);
