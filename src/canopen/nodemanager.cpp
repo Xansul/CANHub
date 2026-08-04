@@ -16,6 +16,10 @@ NodeManager::NodeManager(NMTMaster *nmtMaster, HeartbeatMonitor *heartbeatMonito
     connect(m_sdoClient, &SDOClient::downloadFinished, this, &NodeManager::onSDODownloadFinished);
     connect(m_sdoClient, &SDOClient::transactionAborted, this, &NodeManager::onSDOAborted);
     connect(m_pdoEngine, &PDOEngine::PDOReceived, this, &NodeManager::onPDOReceived);
+
+    //placeholder for UI testing
+    NodeSession session;
+    m_sessions[0] = session;
 }
 
 QList<quint8> NodeManager::knownNodes() const

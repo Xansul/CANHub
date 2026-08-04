@@ -37,6 +37,8 @@ qt_add_qml_module(appCANHub
         SOURCES src/canopen/NodeSession.h
         SOURCES src/canopen/nodemanager.h src/canopen/nodemanager.cpp
         SOURCES src/ui/nodelistmodel.h src/ui/nodelistmodel.cpp
+        SOURCES src/ui/TraceEntry.h
+        SOURCES src/ui/tracemodel.h src/ui/tracemodel.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
