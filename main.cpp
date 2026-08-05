@@ -10,6 +10,7 @@
 #include "src/canopen/nodemanager.h"
 #include "src/ui/nodelistmodel.h"
 #include "src/ui/tracemodel.h"
+#include "src/ui/sdoconsole.h"
 
 int main(int argc, char *argv[])
 {
@@ -27,6 +28,7 @@ int main(int argc, char *argv[])
     auto *nodeManager = new NodeManager(nmtMaster, heartbeatMonitor, sdoClient, pdoEngine, &app);
     auto *nodeListModel = new NodeListModel(nodeManager, &app);
     auto *traceModel = new TraceModel(&app);
+    auto *sdoConsole = new SDOConsole(sdoClient, &app);
 
     //move to thread - busEngine slots will now run on busThread
     busEngine->moveToThread(busThread);
@@ -67,6 +69,7 @@ int main(int argc, char *argv[])
     //QML isn't creating instances - context property is appropriate here
     engine.rootContext()->setContextProperty("nodeListModel", nodeListModel);
     engine.rootContext()->setContextProperty("traceModel", traceModel);
+    engine.rootContext()->setContextProperty("sdoConsole", sdoConsole);
 
     engine.loadFromModule("CANHub", "Main");
 

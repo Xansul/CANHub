@@ -86,33 +86,27 @@ void TraceModel::flushPending()
         return;
     }
 
-    //calculate and evict old entries if over capacity
-    const size_t totalAfterInsert = m_entries.size() + m_pending.size();
-    if (totalAfterInsert > static_cast<size_t>(kMaxEntries))
+    const int pendingCount = static_cast<int>(m_pending.size());
+
+    //insert newest first - reverse iterator
+    beginInsertRows(QModelIndex(), 0, pendingCount - 1);
+    for (auto it = m_pending.rbegin(); it != m_pending.rend(); ++it)
     {
-        const size_t overflow = totalAfterInsert - static_cast<size_t>(kMaxEntries);
-        //clamp to not exceed container size
-        const size_t toRemove = std::min(overflow, m_entries.size());
-
-        if (toRemove > 0)
-        {
-            beginRemoveRows(QModelIndex(), 0, static_cast<int>(toRemove));
-            m_entries.erase(m_entries.begin(), m_entries.begin() + toRemove);
-            endRemoveRows();
-        }
-    }
-
-    //calculate size and add new entries
-    const int firstNewRow = static_cast<int>(m_entries.size());
-    const int lastNewRow = firstNewRow + static_cast<int>(m_pending.size()) - 1;
-
-    beginInsertRows(QModelIndex(), firstNewRow, lastNewRow);
-    for (const auto &entry : m_pending)
-    {
-        m_entries.push_back(entry);
+        m_entries.push_front(*it);
     }
     endInsertRows();
-
-    //clear pending
     m_pending.clear();
+
+    //calculate eviction count and remove
+    if (m_entries.size() > static_cast<size_t>(kMaxEntries))
+    {
+        const size_t toRemove = m_entries.size() - static_cast<size_t>(kMaxEntries);
+
+        const int firstRow = static_cast<int>(m_entries.size() - toRemove);
+        const int lastRow = static_cast<int>(m_entries.size() - 1);
+
+        beginRemoveRows(QModelIndex(), firstRow, lastRow);
+        m_entries.erase(m_entries.end() - static_cast<long>(toRemove), m_entries.end());
+        endRemoveRows();
+    }
 }

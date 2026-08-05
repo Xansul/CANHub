@@ -39,7 +39,7 @@ private slots:
 private:
     void enqueue(const QCanBusFrame &frame, bool isTx);
 
-    std::deque<TraceEntry> m_entries;
+    std::deque<TraceEntry> m_entries; //newest at front
     std::vector<TraceEntry> m_pending; //vector since only append and clear are needed
     QTimer m_flushTimer;
     QElapsedTimer m_clock;
