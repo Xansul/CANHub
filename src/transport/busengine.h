@@ -12,14 +12,14 @@ class BusEngine : public QObject
 public:
     explicit BusEngine(QObject *parent = nullptr);
 
-    //configures connection
-    bool configure(const QString &pluginName, const QString &interfaceName);
-
 public slots:
     //use slots to enable cross-thread queueing
     void connectDevice();
     void disconnectDevice();
     void sendFrame(const QCanBusFrame &frame);
+
+    //configures connection - public slot so that it can be called from another thread via queued connection - bitrate is in bits/s - must be set before connectDevice()
+    void configure(const QString &pluginName, const QString &interfaceName, int bitRate);
 
 signals:
     void frameReceived(const QCanBusFrame &frame);

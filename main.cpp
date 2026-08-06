@@ -13,6 +13,7 @@
 #include "src/ui/sdoconsole.h"
 #include "src/ui/pdoconsolemodel.h"
 #include "src/ui/nmtcontrols.h"
+#include "src/ui/connectionmanager.h"
 
 int main(int argc, char *argv[])
 {
@@ -36,6 +37,7 @@ int main(int argc, char *argv[])
     auto *sdoConsole = new SDOConsole(sdoClient, &app);
     auto *pdoConsoleModel = new PDOConsoleModel(pdoEngine, nodeManager, &app);
     auto *nmtControls = new NMTControls(nmtMaster, &app);
+    auto *connectionManager = new ConnectionManager(busEngine, &app);
 
     //move to thread - busEngine slots will now run on busThread
     busEngine->moveToThread(busThread);
@@ -59,15 +61,6 @@ int main(int argc, char *argv[])
     QObject::connect(busEngine, &BusEngine::frameReceived, heartbeatMonitor, &HeartbeatMonitor::onFrameReceived, Qt::AutoConnection);
     QObject::connect(busEngine, &BusEngine::frameReceived, traceModel, &TraceModel::onFrameReceived, Qt::AutoConnection);
 
-    //temp hardcoded adapter selection
-#if defined(Q_OS_WIN)
-    busEngine->configure("peakcam", "usb0");
-#elif defined(Q_OS_LINUX)
-    busEngine->configure("socketcan", "can0");
-#else
-    busEngine->configure("virtualcan", "vcan0");
-#endif
-
     //queue device connection
     QMetaObject::invokeMethod(busEngine, "connectDevice", Qt::QueuedConnection);
 
@@ -79,6 +72,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("sdoConsole", sdoConsole);
     engine.rootContext()->setContextProperty("pdoConsoleModel", pdoConsoleModel);
     engine.rootContext()->setContextProperty("nmtControls", nmtControls);
+    engine.rootContext()->setContextProperty("connectionManager", connectionManager);
 
     engine.loadFromModule("CANHub", "Main");
 

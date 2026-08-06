@@ -1,11 +1,12 @@
 #include "busengine.h"
 #include <QCanBus>
+#include <QVariant>
 
 BusEngine::BusEngine(QObject *parent)
     : QObject{parent}
 {}
 
-bool BusEngine::configure(const QString &pluginName, const QString &interfaceName)
+void BusEngine::configure(const QString &pluginName, const QString &interfaceName, int bitRate)
 {
     QString errorString;
 
@@ -15,14 +16,15 @@ bool BusEngine::configure(const QString &pluginName, const QString &interfaceNam
     if (!m_device)
     {
         emit busError(QStringLiteral("Failed to create device: %1").arg(errorString));
-        return false;
+        return;
     }
+
+    //set bitrate
+    m_device->setConfigurationParameter(QCanBusDevice::BitRateKey, QVariant::fromValue(bitRate));
 
     //hook up slots
     connect(m_device.get(), &QCanBusDevice::framesReceived, this, &BusEngine::onFramesAvailable);
     connect(m_device.get(), &QCanBusDevice::errorOccurred, this, &BusEngine::onDeviceError);
-
-    return true;
 }
 
 void BusEngine::connectDevice()

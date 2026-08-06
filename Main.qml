@@ -9,7 +9,7 @@ ApplicationWindow {
     height: 1024
     visible: true
     title: qsTr("CANHub")
-    color: "#111"
+    color: "#222"
 
     //map NodeState's enum to display text
     function nmtStateLabel(value) {
@@ -35,7 +35,7 @@ ApplicationWindow {
             Layout.fillHeight: true
             Layout.fillWidth: true
             radius: 6
-            color: "#222"
+            color: "#333"
 
             ColumnLayout {
                 anchors.fill: parent
@@ -137,7 +137,7 @@ ApplicationWindow {
             Layout.preferredHeight: 300
             Layout.fillWidth: true
             radius: 6
-            color: "#222"
+            color: "#333"
 
             ColumnLayout {
                 anchors.fill: parent
@@ -238,7 +238,7 @@ ApplicationWindow {
             Layout.fillHeight: true
             Layout.fillWidth: true
             radius: 6
-            color: "#222"
+            color: "#333"
 
             ColumnLayout {
                 anchors.top: parent.top
@@ -294,10 +294,10 @@ ApplicationWindow {
 
         Rectangle {
             id: nmtPanel
-            Layout.preferredHeight: 300
+            Layout.preferredHeight: 200
             Layout.fillWidth: true
             radius: 6
-            color: "#222"
+            color: "#333"
 
             ColumnLayout {
                 anchors.fill: parent
@@ -337,7 +337,7 @@ ApplicationWindow {
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: 12
-                    Layout.bottomMargin: 200
+                    Layout.bottomMargin: 12
 
                     ConsoleButton {
                         text: qsTr("Pre-Op")
@@ -356,6 +356,76 @@ ApplicationWindow {
                 }
             }
         }
+
+        Rectangle {
+            id: connectionPanel
+            Layout.fillWidth: true
+            Layout.preferredHeight: 250
+            radius: 6
+            color: "#333"
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 20
+                spacing: 12
+
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: qsTr("Connection")
+                    color: "white"
+                    font.bold: true
+                }
+
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 12
+
+                    ComboBox {
+                        id: pluginCombo
+                        Layout.preferredWidth: 130
+                        model: connectionManager.availablePlugins()
+                    }
+
+                    ComboBox {
+                        id: interfaceCombo
+                        Layout.preferredWidth: 130
+                        model: connectionManager.availableInterfaces(pluginCombo.currentText)
+                    }
+                }
+
+                ComboBox {
+                    id: bitRateCombo
+                    Layout.alignment: Qt.AlignHCenter
+                    model: connectionManager.commonBitRates()
+                    currentIndex: 5
+                }
+
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 12
+
+                    ConsoleButton {
+                        text: connectionManager.connected ? qsTr("Disconnect") : qsTr("Connect")
+                        onClicked: connectionManager.connected
+                                    ? connectionManager.disconnectBus()
+                                    : connectionManager.connectTo(pluginCombo.currentText, interfaceCombo.currentText, bitRateCombo.currentValue)
+                    }
+
+                    ConsoleButton {
+                        text: qsTr("Refresh")
+                        onClicked: interfaceCombo.model = connectionManager.availableInterfaces(pluginCombo.currentText)
+                    }
+                }
+
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: connectionManager.statusMessage
+                    color: connectionManager.connected ? "#8fd98f" : "#d9c88f"
+                    wrapMode: Text.Wrap
+                    Layout.bottomMargin: 12
+                }
+            }
+        }
     }
 
     ColumnLayout {
@@ -370,7 +440,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.preferredHeight: 32
             radius: 6
-            color: "#222"
+            color: "#333"
 
             Text {
                 anchors.centerIn: parent

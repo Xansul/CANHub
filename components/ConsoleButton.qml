@@ -5,7 +5,7 @@ Button {
     id: control
     palette.buttonText: "#222"
     background: Rectangle {
-        color: control.pressed ? "#222" : (control.hovered ? "#333" : "#444")
+        color: control.pressed ? "#333" : (control.hovered ? "#444" : "#555")
         radius: 4
     }
 }
