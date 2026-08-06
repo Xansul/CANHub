@@ -1,10 +1,11 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 
 ApplicationWindow {
     id: root
-    width: 1024
-    height: 640
+    width: 2056
+    height: 1024
     visible: true
     title: qsTr("CANHub")
 
@@ -19,195 +20,347 @@ ApplicationWindow {
         }
     }
 
-    ListView {
-        id: nodeList
+    ColumnLayout {
+        id: consolePanels
         anchors.top: parent.top
-        anchors.left: parent.left
         anchors.right: parent.right
-        anchors.margins: 12
-        height: 180
-        spacing: 4
-        model: nodeListModel
+        anchors.bottom: parent.bottom
+        width: 500
+        spacing: 12
 
-        delegate: Rectangle {
-            width: nodeList.width
-            height: 48
+        Rectangle {
+            id: pdoConsolePanel
+            Layout.fillHeight: true
+            Layout.fillWidth: true
             radius: 6
-            color: alive ? "#1f3a1f" : "#3a1f1f"
+            color: "#222"
 
-            Row {
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                anchors.leftMargin: 12
-                spacing: 16
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 20
+                spacing: 12
 
                 Text {
-                    text: qsTr("Node %1").arg(nodeId)
+                    Layout.alignment: Qt.AlignHCenter
+                    text: qsTr("PDO Console")
                     color: "white"
                     font.bold: true
                 }
 
-                Text {
-                    text: root.nmtStateLabel(NMTState)
-                    color: "white"
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 8
+
+                    TextField {
+                        id: pdoCobIdField
+                        placeholderText: qsTr("COB-ID (hex)")
+                        Layout.preferredWidth: 100
+                    }
+
+                    TextField {
+                        id: pdoNodeIdField
+                        placeholderText: qsTr("Node")
+                        Layout.preferredWidth: 90
+                        validator: IntValidator { bottom: 0; top: 127 }
+                    }
+
+                    TextField {
+                        id: pdoDataField
+                        placeholderText: qsTr("Data (hex, send only)")
+                        Layout.preferredWidth: 160
+                    }
                 }
 
-                Text {
-                    text: alive ? qsTr("Alive") : qsTr("No heartbeat")
-                    color: alive ? "#8fd98f" : "#d98f8f"
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 8
+
+                    Button {
+                        text: qsTr("Subscribe")
+                        palette.buttonText: "#222"
+                        onClicked: pdoConsoleModel.addSubscription(
+                                       parseInt(pdoCobIdField.text, 16),
+                                       parseInt(pdoNodeIdField.text))
+                    }
+
+                    Button {
+                        text: qsTr("Send")
+                        palette.buttonText: "#222"
+                        onClicked: pdoConsoleModel.sendPDO(
+                                       parseInt(pdoCobIdField.text, 16),
+                                       pdoDataField.text)
+                    }
+
+                    Button {
+                        text: qsTr("Poll (not always supported")
+                        palette.buttonText: "#222"
+                        onClicked: pdoConsoleModel.pollPDO(parseInt(pdoCobIdField.text, 16))
+                    }
+                }
+
+                ListView {
+                    id: pdoList
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    model: pdoConsoleModel
+
+                    delegate: Row {
+                        width: ListView.view.width
+                        spacing: 12
+                        padding: 2
+
+                        Text {
+                            text: cobId
+                            color: "white"
+                            width: 60
+                            font.family: "monospace"
+                        }
+
+                        Text {
+                            text: qsTr("node %1").arg(nodeId)
+                            color: "#888"
+                            width: 60
+                        }
+
+                        Text {
+                            text: dataHex
+                            color: "#cccccc"
+                            font.family: "monospace"
+                        }
+                    }
                 }
             }
         }
 
-        Label {
-            anchors.centerIn: parent
-            visible: parent.count === 0
-            text: qsTr("No nodes seen yet")
-        }
-    }
-
-    ListView {
-        id: traceView
-        anchors.top: nodeList.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: sdoConsolePanel.top
-        anchors.margins: 12
-        anchors.topMargin: 4
-        clip: true
-        model: traceModel
-
-        delegate: Rectangle {
-            width: traceView.width
-            color: "#222"
-            height: 24
+        Rectangle {
+            id: sdoConsolePanel
+            Layout.preferredHeight: 300
+            Layout.fillWidth: true
             radius: 6
+            color: "#222"
 
-            Row {
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 20
                 spacing: 12
 
                 Text {
-                    text: timestamp.toFixed(3)
-                    color: "#888"
-                    width: 70
-                }
-
-                Text {
-                    text: direction
-                    color: direction === "TX" ? "#8fb8d9" : "#d9c88f"
-                    width: 30
-                }
-
-                Text {
-                    text: cobId
+                    Layout.alignment: Qt.AlignHCenter
+                    text: qsTr("SDO Console")
                     color: "white"
-                    width: 60
-                    font.family: "monospace"
+                    font.bold: true
+                }
+
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 0
+
+                    TextField {
+                        id: sdoNodeIdField
+                        placeholderText: qsTr("Node ID")
+                        Layout.preferredWidth: 80
+                        validator: IntValidator { bottom: 1; top: 127 }
+                    }
+
+                    TextField {
+                        id: sdoIndexField
+                        placeholderText: qsTr("Index (hex)")
+                        Layout.preferredWidth: 100
+                    }
+
+                    TextField {
+                        id: sdoSubIndexField
+                        placeholderText: qsTr("Sub Index")
+                        Layout.preferredWidth: 80
+                        validator: IntValidator { bottom: 0; top: 255 }
+                    }
+
+                    TextField {
+                        id: sdoDataField
+                        placeholderText: qsTr("Data (hex, write only)")
+                        Layout.preferredWidth: 170
+                    }
+                }
+
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 20
+
+                    Button {
+                        text: qsTr("Read")
+                        palette.buttonText: "#222"
+                        enabled: !sdoConsole.busy
+                        onClicked: sdoConsole.readValue(parseInt(sdoNodeIdField.text),
+                                                        parseInt(sdoIndexField.text, 16),
+                                                        parseInt(sdoSubIndexField.text))
+                    }
+
+                    Button {
+                        text: qsTr("Write")
+                        palette.buttonText: "#222"
+                        enabled: !sdoConsole.busy
+                        onClicked: sdoConsole.writeValue(parseInt(sdoNodeIdField.text),
+                                                        parseInt(sdoIndexField.text, 16),
+                                                        parseInt(sdoSubIndexField.text),
+                                                        sdoDataField.text)
+                    }
+                }
+
+                BusyIndicator {
+                    Layout.alignment: Qt.AlignHCenter
+                    running: sdoConsole.busy
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
+                    palette.dark: "white"
                 }
 
                 Text {
-                    text: dataHex
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: parent.width
+                    Layout.fillHeight: true
+                    horizontalAlignment: Text.AlignHCenter;
+                    text: sdoConsole.lastResult
                     color: "#cccccc"
-                    font.family: "monospace"
+                    wrapMode: Text.Wrap
                 }
             }
         }
     }
 
-    Rectangle {
-        id: sdoConsolePanel
+    ColumnLayout {
+        id: nodePanels
         anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: 500
+        spacing: 12
+
+        Rectangle {
+            id: nodePanel
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            radius: 6
+            color: "#222"
+
+            ColumnLayout {
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.margins: 20
+                spacing: 12
+
+                ListView {
+                    id: nodeList
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 200
+                    clip: true
+                    model: nodeListModel
+
+                    delegate: Rectangle {
+                        width: nodeList.width
+                        height: 48
+                        radius: 6
+                        color: alive ? "#1f3a1f" : "#3a1f1f"
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 12
+                            spacing: 16
+
+                            Text {
+                                text: qsTr("Node %1").arg(nodeId)
+                                color: "white"
+                                font.bold: true
+                            }
+
+                            Text {
+                                text: root.nmtStateLabel(NMTState)
+                                color: "white"
+                            }
+
+                            Text {
+                                text: alive ? qsTr("Alive") : qsTr("No heartbeat")
+                                color: alive ? "#8fd98f" : "#d98f8f"
+                            }
+                        }
+                    }
+
+                    Label {
+                        anchors.centerIn: parent
+                        visible: parent.count === 0
+                        text: qsTr("No nodes seen yet")
+                    }
+                }
+            }
+        }
+    }
+
+    ColumnLayout {
+        id: tracePanel
+        anchors.top: parent.top
+        anchors.left: nodePanels.right
+        anchors.right: consolePanels.left
         anchors.bottom: parent.bottom
         anchors.margins: 12
-        height: 170
-        radius: 6
-        color: "#222"
 
-        Column {
-            anchors.fill: parent
-            anchors.margins: 10
-            spacing: 12
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 32
+            radius: 6
+            color: "#222"
 
             Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("SDO Console")
+                anchors.centerIn: parent
+                text: qsTr("Trace Log")
                 color: "white"
                 font.bold: true
             }
+        }
 
-            Row {
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 0
+        ListView {
+            id: traceView
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            model: traceModel
 
-                TextField {
-                    id: nodeIdField
-                    placeholderText: qsTr("Node ID")
-                    width: 80
-                    validator: IntValidator { bottom: 1; top: 127 }
-                }
-
-                TextField {
-                    id: indexField
-                    placeholderText: qsTr("Index (hex)")
-                    width: 100
-                }
-
-                TextField {
-                    id: subIndexField
-                    placeholderText: qsTr("Sub Index")
-                    width: 80
-                    validator: IntValidator { bottom: 0; top: 255 }
-                }
-
-                TextField {
-                    id: dataField
-                    placeholderText: qsTr("Data (hex, write only)")
-                    width: 170
-                }
-            }
-
-            Row {
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 20
-
-                Button {
-                    text: qsTr("Read")
-                    palette.buttonText: "#222"
-                    enabled: !sdoConsole.busy
-                    onClicked: sdoConsole.readValue(parseInt(nodeIdField.text),
-                                                    parseInt(indexField.text, 16),
-                                                    parseInt(subIndexField.text))
-                }
-
-                Button {
-                    text: qsTr("Write")
-                    palette.buttonText: "#222"
-                    enabled: !sdoConsole.busy
-                    onClicked: sdoConsole.writeValue(parseInt(nodeIdField.text),
-                                                    parseInt(indexField.text, 16),
-                                                    parseInt(subIndexField.text),
-                                                    dataField.text)
-                }
-            }
-
-            BusyIndicator {
-                anchors.horizontalCenter: parent.horizontalCenter
-                running: sdoConsole.busy
-                width: 24
+            delegate: Rectangle {
+                width: traceView.width
+                color: "#222"
                 height: 24
-                palette.dark: "white"
-            }
+                radius: 6
 
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: sdoConsole.lastResult
-                color: "#cccccc"
-                wrapMode: Text.Wrap
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter;
+                RowLayout {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 12
+
+                    Text {
+                        text: timestamp.toFixed(3)
+                        color: "#888"
+                        Layout.preferredWidth: 70
+                    }
+
+                    Text {
+                        text: direction
+                        color: direction === "TX" ? "#8fb8d9" : "#d9c88f"
+                        Layout.preferredWidth: 30
+                    }
+
+                    Text {
+                        text: cobId
+                        color: "white"
+                        Layout.preferredWidth: 60
+                        font.family: "monospace"
+                    }
+
+                    Text {
+                        text: dataHex
+                        color: "#cccccc"
+                        font.family: "monospace"
+                    }
+                }
             }
         }
     }

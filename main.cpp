@@ -11,6 +11,7 @@
 #include "src/ui/nodelistmodel.h"
 #include "src/ui/tracemodel.h"
 #include "src/ui/sdoconsole.h"
+#include "src/ui/pdoconsolemodel.h"
 
 int main(int argc, char *argv[])
 {
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
     auto *nodeListModel = new NodeListModel(nodeManager, &app);
     auto *traceModel = new TraceModel(&app);
     auto *sdoConsole = new SDOConsole(sdoClient, &app);
+    auto *pdoConsoleModel = new PDOConsoleModel(pdoEngine, nodeManager, &app);
 
     //move to thread - busEngine slots will now run on busThread
     busEngine->moveToThread(busThread);
@@ -70,6 +72,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("nodeListModel", nodeListModel);
     engine.rootContext()->setContextProperty("traceModel", traceModel);
     engine.rootContext()->setContextProperty("sdoConsole", sdoConsole);
+    engine.rootContext()->setContextProperty("pdoConsoleModel", pdoConsoleModel);
 
     engine.loadFromModule("CANHub", "Main");
 
