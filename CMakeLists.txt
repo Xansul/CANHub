@@ -26,6 +26,7 @@ qt_add_executable(appCANHub
     src/ui/tracemodel.cpp
     src/ui/sdoconsole.cpp
     src/ui/pdoconsolemodel.cpp
+    src/ui/nmtcontrols.cpp
 )
 
 qt_add_qml_module(appCANHub
@@ -44,6 +45,8 @@ qt_add_qml_module(appCANHub
         SOURCES src/ui/tracemodel.h src/ui/tracemodel.cpp
         SOURCES src/ui/sdoconsole.h src/ui/sdoconsole.cpp
         SOURCES src/ui/pdoconsolemodel.h src/ui/pdoconsolemodel.cpp
+        SOURCES src/ui/nmtcontrols.h src/ui/nmtcontrols.cpp
+        QML_FILES components/ConsoleButton.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

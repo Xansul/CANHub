@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "components/"
 
 ApplicationWindow {
     id: root
@@ -8,6 +9,7 @@ ApplicationWindow {
     height: 1024
     visible: true
     title: qsTr("CANHub")
+    color: "#111"
 
     //map NodeState's enum to display text
     function nmtStateLabel(value) {
@@ -75,25 +77,22 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: 8
 
-                    Button {
+                    ConsoleButton {
                         text: qsTr("Subscribe")
-                        palette.buttonText: "#222"
                         onClicked: pdoConsoleModel.addSubscription(
                                        parseInt(pdoCobIdField.text, 16),
                                        parseInt(pdoNodeIdField.text))
                     }
 
-                    Button {
-                        text: qsTr("Send")
-                        palette.buttonText: "#222"
+                    ConsoleButton {
+                        text: qsTr("Send")                       
                         onClicked: pdoConsoleModel.sendPDO(
                                        parseInt(pdoCobIdField.text, 16),
                                        pdoDataField.text)
                     }
 
-                    Button {
-                        text: qsTr("Poll (not always supported")
-                        palette.buttonText: "#222"
+                    ConsoleButton {
+                        text: qsTr("Poll (not always supported")                       
                         onClicked: pdoConsoleModel.pollPDO(parseInt(pdoCobIdField.text, 16))
                     }
                 }
@@ -187,18 +186,16 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: 20
 
-                    Button {
-                        text: qsTr("Read")
-                        palette.buttonText: "#222"
+                    ConsoleButton {
+                        text: qsTr("Read")                        
                         enabled: !sdoConsole.busy
                         onClicked: sdoConsole.readValue(parseInt(sdoNodeIdField.text),
                                                         parseInt(sdoIndexField.text, 16),
                                                         parseInt(sdoSubIndexField.text))
                     }
 
-                    Button {
-                        text: qsTr("Write")
-                        palette.buttonText: "#222"
+                    ConsoleButton {
+                        text: qsTr("Write")                        
                         enabled: !sdoConsole.busy
                         onClicked: sdoConsole.writeValue(parseInt(sdoNodeIdField.text),
                                                         parseInt(sdoIndexField.text, 16),
@@ -290,6 +287,71 @@ ApplicationWindow {
                         anchors.centerIn: parent
                         visible: parent.count === 0
                         text: qsTr("No nodes seen yet")
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            id: nmtPanel
+            Layout.preferredHeight: 300
+            Layout.fillWidth: true
+            radius: 6
+            color: "#222"
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 20
+                spacing: 12
+
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: qsTr("NMT Controls")
+                    color: "white"
+                    font.bold: true
+                }
+
+                TextField {
+                    id: nmtNodeIdField
+                    Layout.alignment: Qt.AlignHCenter
+                    placeholderText: qsTr("Node (0 = all)")
+                    Layout.preferredWidth: 110
+                    validator: IntValidator { bottom: 0; top: 127 }
+                }
+
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 12
+
+                    ConsoleButton {
+                        text: qsTr("Start")
+                        onClicked: nmtControls.start(parseInt(nmtNodeIdField.text) || 0)
+                    }
+
+                    ConsoleButton {
+                        text: qsTr("Stop")
+                        onClicked: nmtControls.stop(parseInt(nmtNodeIdField.text) || 0)
+                    }
+                }
+
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 12
+                    Layout.bottomMargin: 200
+
+                    ConsoleButton {
+                        text: qsTr("Pre-Op")
+                        onClicked: nmtControls.enterPreOperational(parseInt(nmtNodeIdField.text) || 0)
+                    }
+
+                    ConsoleButton {
+                        text: qsTr("Reset Node")
+                        onClicked: nmtControls.resetNode(parseInt(nmtNodeIdField.text) || 0)
+                    }
+
+                    ConsoleButton {
+                        text: qsTr("Reset Comm")
+                        onClicked: nmtControls.resetCommunication(parseInt(nmtNodeIdField.text) || 0)
                     }
                 }
             }
